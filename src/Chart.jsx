@@ -6,6 +6,7 @@ function Chart() {
     const ref = useRef();
 
   const [fill, setFill] = useState("red");
+  const [zoomState, setZoomState] = useState();
 
 
   const width = 500;
@@ -20,24 +21,30 @@ function Chart() {
     [-100, 400]
   ];
 
-  // const [minY, setMinY] = useState(100);
-  // const [maxY, setMaxY] = useState(400);
-
-
-
-  // const [yScale, setYScale] = useState(yScaleInitial);
-
-    useEffect(() => draw(),[fill]);
+  useEffect(() => draw(),[fill, zoomState]);
 
   function draw() {
 
+
       let yScale = d3.scaleLinear().domain([100, 400]).range([innerHeight, 0]);
+
+      if(zoomState){
+          const newYscale = zoomState.rescaleY(yScale);
+          yScale.domain(newYscale.domain());
+      }
+
 
           let yAxis = d3.axisLeft(yScale);
 
           d3.select(ref.current).selectAll("svg").remove();
 
           const zoomer = d3.zoom().on("zoom", zoom);
+
+          function zoom(event) {
+                // console.log(event);
+                const zoomState = event.transform;
+                setZoomState(zoomState);
+          }
 
           const svg = d3
               .select(ref.current)
@@ -83,17 +90,7 @@ function Chart() {
               .attr("transform", "translate(75,0)")
               .call(yAxis);
 
-          function zoom(event) {
-              console.log(event);
-              // let new_yScale = event.transform.rescaleY(yScale);
-              // setYScale(new_yScale);
 
-              // console.log(new_yScale);
-              // console.log(new_yScale.domain());
-              // console.log(new_yScale.range());
-              // setMinY(new_yScale.domain()[0]);
-              // setMaxY(new_yScale.domain()[1]);
-          }
       }
 
   return (
